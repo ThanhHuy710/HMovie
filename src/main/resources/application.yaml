@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: HMovie
+  # 1. Cấu hình PostgreSQL
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hmovie_db
+    username: postgres
+    password: vothanhhuy7102004
+  jpa:
+    hibernate:
+      ddl-auto: update # Tự động tạo/cập nhật bảng dựa trên Entity
+    show-sql: true
+
+  # 2. Cấu hình Redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
+
+  # 3. Cấu hình Keycloak (Xác minh Token)
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Thay 'devteria' bằng tên realm bạn tạo trên Keycloak
+          issuer-uri: http://localhost:8080/realms/hmovie_realm
