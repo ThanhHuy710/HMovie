@@ -29,8 +29,8 @@ public enum ErrorCode {
     CART_NOT_FOUND(1021, "Cart item not found", HttpStatus.NOT_FOUND),
     PAGE_NOT_FOUND(1022, "Page not found", HttpStatus.NOT_FOUND),
     PROFILE_NOT_FOUND(1022, "profile not found", HttpStatus.NOT_FOUND),
-
-    RATING_NOT_FOUND(1021,"rating of feedback must be not empty" ,HttpStatus.BAD_REQUEST );
+    RATING_NOT_FOUND(1021,"rating of feedback must be not empty" ,HttpStatus.BAD_REQUEST ),
+    USERNAME_OR_PASSWORD_INCORECT(1022,"please,check your username or password" ,HttpStatus.BAD_REQUEST );
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

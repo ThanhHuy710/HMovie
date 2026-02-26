@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ public class GenreService {
     GenreRepository genreRepository;
     GenreMapper genreMapper;
 
-    @Cacheable(value = "GenreRepository", key = "'allGenres'")
+    @Cacheable(value = "genre_list")
     public List<GenreResponse> getAllGenres() {
         log.info("getAllGenres: Fetching from Database");
         return genreRepository.findAll().stream()
@@ -34,7 +35,7 @@ public class GenreService {
                 .toList();
     }
 
-    @Cacheable(value = "GenreRepository", key = "#genreId")
+    @Cacheable(value = "genre_detail", key = "#genreId")
     public GenreResponse getGenreById(String genreId) {
         log.info("getGenreById: Fetching from Database for id {}", genreId);
         return genreMapper.toGenreResponse(genreRepository.findById(genreId)
@@ -42,7 +43,7 @@ public class GenreService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "GenreRepository", key = "'allGenres'")
+    @CacheEvict(value = "genre_list", allEntries = true)
     public GenreResponse createGenre(GenreRequest request) {
         log.info("createGenre: Creating new genre");
         Genre genre = genreMapper.toGenre(request);
@@ -50,7 +51,12 @@ public class GenreService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "GenreRepository", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "genre_list", allEntries = true),
+                    @CacheEvict(value = "genre_detail", key = "#genreId")
+            }
+    )
     public GenreResponse updateGenre(String genreId, GenreRequest request) {
         log.info("updateGenre: Updating genre {}", genreId);
         Genre genre = genreRepository.findById(genreId)
@@ -61,7 +67,12 @@ public class GenreService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "GenreRepository", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "genre_list", allEntries = true),
+                    @CacheEvict(value = "genre_detail", key = "#genreId")
+            }
+    )
     public void deleteGenre(String genreId) {
         log.info("deleteGenre: Deleting genre {}", genreId);
         if (!genreRepository.existsById(genreId)) {

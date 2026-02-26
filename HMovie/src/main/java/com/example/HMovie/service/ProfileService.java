@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,14 +53,13 @@ public class ProfileService {
     String clientSecret;
 
     @PreAuthorize("hasRole('ADMIN')")
-    @Cacheable(value = "ProfileRepository")
+    @Cacheable(value = "profile_list")
     public List<ProfileResponse> getAllProfiles() {
         var profiles = profileRepository.findAll();
         return profiles.stream().map(profileMapper::toProfileResponse).toList();
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Cacheable(value = "ProfileRepository")
     public ProfileResponse getMyProfile() {
         log.info("getMyProfile đã được gọi");
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -72,7 +72,10 @@ public class ProfileService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "ProfileRepository", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "profiles_list", allEntries = true),
+            @CacheEvict(value = "profile_detail", key = "#result.profileId")
+    })
     public ProfileResponse updateMyProfile(ProfileRequest request) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
@@ -153,7 +156,10 @@ public class ProfileService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "ProfileRepository", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "profiles_list", allEntries = true),
+            @CacheEvict(value = "profile_detail", key = "#profileId")
+    })
     public void deleteProfile(String profileId) {
         Profile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -190,7 +196,7 @@ public class ProfileService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Cacheable(value = "ProfileRepository", key = "#profileId")
+    @Cacheable(value = "profile_detail", key = "#profileId")
     public ProfileResponse getProfileById(@Valid String profileId) {
         var profile = profileRepository.findById(profileId).orElseThrow(
                 () -> new AppException(ErrorCode.PROFILE_NOT_FOUND));

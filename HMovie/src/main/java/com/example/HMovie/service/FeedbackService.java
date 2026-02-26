@@ -35,7 +35,7 @@ public class FeedbackService {
     ProfileRepository profileRepository;
 
     @PreAuthorize("hasRole('USER')")
-    @Cacheable(value = "FeedbackRepository", key = "'allFeedbacks'")
+    @Cacheable(value = "feedback_list")
     public List<FeedbackResponse> getAllFeedbacks() {
         log.info("getAllFeedbacks: Fetching from Database");
         return feedbackRepository.findAll().stream()
@@ -44,13 +44,14 @@ public class FeedbackService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Cacheable(value = "FeedbackRepository", key = "#feedbackId")
+    @Cacheable(value = "feedback_detail", key = "#feedbackId")
     public FeedbackResponse getFeedbackById(String feedbackId) {
         log.info("getFeedbackById: Fetching from Database for id {}", feedbackId);
         return feedbackMapper.toFeedbackResponse(feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_FOUND)));
     }
 
+    @Cacheable(value = "feedback_list_by_movie", key = "#movieId")
     public List<FeedbackResponse> getFeedbacksByMovieId(String movieId) {
         log.info("getFeedbacksByMovieId: Fetching feedbacks for movie {}", movieId);
         return feedbackRepository.findByMovieMovieId(movieId).stream()
@@ -61,8 +62,11 @@ public class FeedbackService {
     @PreAuthorize("hasRole('USER')")
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "FeedbackRepository", key = "'allFeedbacks'"),
-            @CacheEvict(value = "MovieRepository", allEntries = true) // Xóa cache Movie để cập nhật Rating mới
+            @CacheEvict(value = "feedback_list", allEntries = true),
+            @CacheEvict(value = "feedback_list_by_movie", allEntries = true),
+            @CacheEvict(value = "movie_list", allEntries = true),
+            @CacheEvict(value = "movie_detail", allEntries = true),
+            @CacheEvict(value = "movie_search", allEntries = true)
     })
     public FeedbackResponse createFeedback(FeedbackRequest request) {
         log.info("createFeedback: Creating new feedback");
@@ -87,8 +91,12 @@ public class FeedbackService {
 
     @PreAuthorize("hasRole('USER')")
     @Caching(evict = {
-            @CacheEvict(value = "FeedbackRepository", allEntries = true),
-            @CacheEvict(value = "MovieRepository", allEntries = true) // Xóa cache Movie
+            @CacheEvict(value = "feedback_list", allEntries = true),
+            @CacheEvict(value = "feedback_detail", key = "#feedbackId"),
+            @CacheEvict(value = "feedback_list_by_movie", allEntries = true),
+            @CacheEvict(value = "movie_list", allEntries = true),
+            @CacheEvict(value = "movie_detail", allEntries = true),
+            @CacheEvict(value = "movie_search", allEntries = true)
     })
     public FeedbackResponse updateFeedback(String feedbackId, FeedbackRequest request) {
         log.info("updateFeedback: Updating feedback {}", feedbackId);
@@ -120,8 +128,12 @@ public class FeedbackService {
     @PreAuthorize("hasRole('USER')")
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "FeedbackRepository", allEntries = true),
-            @CacheEvict(value = "MovieRepository", allEntries = true) // Xóa cache Movie
+            @CacheEvict(value = "feedback_list", allEntries = true),
+            @CacheEvict(value = "feedback_detail", key = "#feedbackId"),
+            @CacheEvict(value = "feedback_list_by_movie", allEntries = true),
+            @CacheEvict(value = "movie_list", allEntries = true),
+            @CacheEvict(value = "movie_detail", allEntries = true),
+            @CacheEvict(value = "movie_search", allEntries = true)
     })
     public void deleteFeedback(String feedbackId) {
         log.info("deleteFeedback: Deleting feedback {}", feedbackId);

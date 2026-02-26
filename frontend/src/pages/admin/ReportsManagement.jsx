@@ -30,7 +30,7 @@ export default function ReportsManagement() {
       setLoading(true);
       const [filmsRes, usersRes, feedbacksRes, invoicesRes] = await Promise.all([
         api.get("/movies"),
-        api.get("/profiles"),
+        api.get("/profile/profiles"),
         api.get("/feedbacks"),
         api.get("/invoices"),
       ]);

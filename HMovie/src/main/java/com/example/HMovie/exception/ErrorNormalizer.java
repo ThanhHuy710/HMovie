@@ -21,14 +21,14 @@ public class ErrorNormalizer {
         objectMapper = new ObjectMapper();
         errorCodeMap = new HashMap<>();
 
-        errorCodeMap.put("User exists with same username", ErrorCode.USER_EXISTED);
-        errorCodeMap.put("User exists with same email", ErrorCode.EMAIL_EXISTED);
-        errorCodeMap.put("User name is missing", ErrorCode.USERNAME_IS_MISSING);
     }
 
     public AppException handleKeyCloakException(FeignException exception) {
         try {
             log.warn("Cannot complete request", exception);
+            if (exception.status() == 401) {
+                return new AppException(ErrorCode.USERNAME_OR_PASSWORD_INCORECT);
+            }
             String content = exception.contentUTF8();
             if (!StringUtils.hasText(content)) {
                 return new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

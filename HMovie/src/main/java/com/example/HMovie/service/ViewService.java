@@ -28,7 +28,7 @@ public class ViewService {
     ViewMapper viewMapper;
 
     @PreAuthorize("hasRole('ADMIN')")
-    @Cacheable(value = "ViewRepository", key = "'allViews'")
+    @Cacheable(value = "view_list")
     public List<ViewResponse> getAllViews() {
         log.info("getAllViews: Fetching from Database");
         return viewRepository.findAll().stream()
@@ -37,7 +37,7 @@ public class ViewService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Cacheable(value = "ViewRepository", key = "#viewId")
+    @Cacheable(value = "view_detail", key = "#viewId")
     public ViewResponse getViewById(String viewId) {
         log.info("getViewById: Fetching from Database for id {}", viewId);
         return viewMapper.toViewResponse(viewRepository.findById(viewId)
@@ -46,8 +46,9 @@ public class ViewService {
 
     @PreAuthorize("hasRole('USER')")
     @Caching(evict = {
-            @CacheEvict(value = "ViewRepository", key = "allViews"),
-            @CacheEvict(value = "MovieRepository", allEntries = true) // Xóa cache Movie để cập nhật Rating mới
+            @CacheEvict(value = "view_list", allEntries = true),
+            @CacheEvict(value = "movie_list", allEntries = true),
+            @CacheEvict(value = "movie_detail", allEntries = true)
     })
     public ViewResponse createView(ViewRequest request) {
         log.info("createView: Creating new view");
@@ -57,7 +58,12 @@ public class ViewService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "ViewRepository", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "view_list", allEntries = true),
+                    @CacheEvict(value = "view_detail", key = "#viewId")
+            }
+    )
     public ViewResponse updateView(String viewId, ViewRequest request) {
         log.info("updateView: Updating view {}", viewId);
         View view = viewRepository.findById(viewId)
@@ -68,7 +74,12 @@ public class ViewService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "ViewRepository", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "view_list", allEntries = true),
+                    @CacheEvict(value = "view_detail", key = "#viewId")
+            }
+    )
     public void deleteView(String viewId) {
         log.info("deleteView: Deleting view {}", viewId);
         if (!viewRepository.existsById(viewId)) {
@@ -78,7 +89,7 @@ public class ViewService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "ViewRepository", key="#profile")
+    @Cacheable(value = "view_list_by_profile", key="#profile")
     public List<ViewResponse> getViewsByProfileId(String profile) {
         return viewRepository.findByProfileProfileId(profile).stream()
                 .map(viewMapper::toViewResponse)

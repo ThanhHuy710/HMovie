@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ public class MovieGenreService {
     MovieGenreRepository movieGenreRepository;
     MovieGenreMapper movieGenreMapper;
 
-    @Cacheable(value = "MovieGenreRepository", key = "'allMovieGenres'")
+    @Cacheable(value = "movie_genre_list")
     public List<MovieGenreResponse> getAllMovieGenres() {
         log.info("getAllMovieGenres: Fetching from Database");
         return movieGenreRepository.findAll().stream()
@@ -34,7 +35,7 @@ public class MovieGenreService {
                 .toList();
     }
 
-    @Cacheable(value = "MovieGenreRepository", key = "#movieGenreId")
+    @Cacheable(value = "movie_genre_detail", key = "#movieGenreId")
     public MovieGenreResponse getMovieGenreById(String movieGenreId) {
         log.info("getMovieGenreById: Fetching from Database for id {}", movieGenreId);
         return movieGenreMapper.toMovieGenreResponse(movieGenreRepository.findById(movieGenreId)
@@ -42,7 +43,10 @@ public class MovieGenreService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "MovieGenreRepository", key = "'allMovieGenres'")
+    @Caching(evict = {
+            @CacheEvict(value = "movie_genre_list", allEntries = true),
+            @CacheEvict(value = "movie_search", allEntries = true)
+    })
     public MovieGenreResponse createMovieGenre(MovieGenreRequest request) {
         log.info("createMovieGenre: Creating new movie genre relation");
         MovieGenre movieGenre = movieGenreMapper.toMovieGenre(request);
@@ -50,7 +54,11 @@ public class MovieGenreService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "MovieGenreRepository", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "movie_genre_list", allEntries = true),
+            @CacheEvict(value = "movie_genre_detail", key = "#movieGenreId"),
+            @CacheEvict(value = "movie_search", allEntries = true)
+    })
     public MovieGenreResponse updateMovieGenre(String movieGenreId, MovieGenreRequest request) {
         log.info("updateMovieGenre: Updating movie genre relation {}", movieGenreId);
         MovieGenre movieGenre = movieGenreRepository.findById(movieGenreId)
@@ -61,7 +69,11 @@ public class MovieGenreService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "MovieGenreRepository", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "movie_genre_list", allEntries = true),
+            @CacheEvict(value = "movie_genre_detail", key = "#movieGenreId"),
+            @CacheEvict(value = "movie_search", allEntries = true)
+    })
     public void deleteMovieGenre(String movieGenreId) {
         log.info("deleteMovieGenre: Deleting movie genre relation {}", movieGenreId);
         if (!movieGenreRepository.existsById(movieGenreId)) {
@@ -70,6 +82,11 @@ public class MovieGenreService {
         movieGenreRepository.deleteById(movieGenreId);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "movie_genre_list", allEntries = true),
+            @CacheEvict(value = "movie_genre_detail", allEntries = true),
+            @CacheEvict(value = "movie_search", allEntries = true)
+    })
     public void deleteMovieGenreByMovieId(String movieId) {
         log.info("deleteMovieGenreByMovieId: Deleting movie genre relation {}", movieId);
         if(!movieGenreRepository.existsByMovie_MovieId(movieId))

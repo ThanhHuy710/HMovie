@@ -53,21 +53,21 @@ export default function ProfilePage() {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    try {
-      const res = await api.post('/upload/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+    // try {
+    //   const res = await api.post('/upload/avatar', formData, {
+    //     headers: { 'Content-Type': 'multipart/form-data' }
+    //   });
       
-      //chưa hoàn thành
-      const avatarUrl = `http://localhost:5001${res.data?.result.url}`;
-      setProfileData({ ...profileData, avatar: avatarUrl });
-      toast.success("Upload ảnh thành công!");
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Upload ảnh thất bại!");
-    } finally {
-      setUploading(false);
-    }
+    //   //chưa hoàn thành
+    //   const avatarUrl = `http://localhost:5001${res.data?.result.url}`;
+    //   setProfileData({ ...profileData, avatar: avatarUrl });
+    //   toast.success("Upload ảnh thành công!");
+    // } catch (error) {
+    //   console.error("Upload error:", error);
+    //   toast.error("Upload ảnh thất bại!");
+    // } finally {
+    //   setUploading(false);
+    // }
   };
 
   const handleSaveProfile = async (e) => {
@@ -75,7 +75,7 @@ export default function ProfilePage() {
     
   
     const dataToUpdate = { ...profileData };
-    
+    console.log("Data to update:", dataToUpdate);
     setLoading(true);
     try {
       const res = await api.put(`/profile/${authUser.profileId}`, dataToUpdate);

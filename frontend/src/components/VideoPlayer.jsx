@@ -1,20 +1,33 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Hls from "hls.js";
 import api from "../lib/axios";
 
 export default function VideoPlayer({ videoUrl, filmId, userId }) {
   const videoRef = useRef(null);
-  const [viewPosted, setViewPosted] = useState(false);
+  
+  const isViewPosted = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
-    const hls = new Hls();
+    if (!video || !videoUrl) return;
 
-    hls.loadSource(videoUrl);
-    hls.attachMedia(video);
+    let hls;
 
+    // Kiểm tra trình duyệt có hỗ trợ Hls.js không (Chrome, Edge, Android...)
+    if (Hls.isSupported()) {
+      hls = new Hls();
+      hls.loadSource(videoUrl);
+      hls.attachMedia(video);
+    } 
+    else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = videoUrl;
+    }
+
+    // Cleanup khi chuyển phim khác hoặc tắt trang
     return () => {
-      hls.destroy();
+      if (hls) {
+        hls.destroy();
+      }
     };
   }, [videoUrl]);
 
@@ -22,21 +35,20 @@ export default function VideoPlayer({ videoUrl, filmId, userId }) {
     const video = videoRef.current;
     if (!video) return;
 
-    // Nếu đã xem >= 10s và chưa gọi API thì gọi
-    if (video.currentTime >= 10 && !viewPosted) {
+    if (video.currentTime >= 10 && !isViewPosted.current) {
       
+      isViewPosted.current = true; 
       try {
-        console.log("Posting view for:", filmId, userId);
-        // Ghi nhận view vào bảng views
+        console.log("Đã xem 10s! Ghi nhận view cho phim:", filmId);
         await api.post(`/views`, { 
           movieId: filmId, 
           profileId: userId, 
           progress: 10 
         });
-
-        setViewPosted(true); // tránh gọi nhiều lần
       } catch (err) {
-        console.error("lỗi ở phía server", err);
+        console.error("Lỗi cập nhật view:", err);
+        // Nếu lỗi mạng, có thể mở khóa lại để cho phép thử lại sau
+        // isViewPosted.current = false; 
       }
     }
   };

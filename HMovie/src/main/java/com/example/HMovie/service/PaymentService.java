@@ -39,8 +39,11 @@ public class PaymentService {
     @PreAuthorize("hasRole('USER')")
     @Caching(
             evict = {
-                    @CacheEvict(value = "InvoiceRepository", allEntries = true),
-                    @CacheEvict(value = "ProfileRepository", allEntries = true)
+                    @CacheEvict(value = "invoice_list", allEntries = true),
+                    @CacheEvict(value = "invoice_detail", allEntries = true),
+                    @CacheEvict(value = "invoice_list_by_profile", allEntries = true),
+                    @CacheEvict(value = "profile_list", allEntries = true),
+                    @CacheEvict(value = "profile_detail", allEntries = true)
             }
     )
     public InvoiceResponse processPayment(PaymentRequest request) {

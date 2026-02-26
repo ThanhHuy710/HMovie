@@ -35,7 +35,7 @@ public class FavoriteService {
     ProfileRepository profileRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
-    @Cacheable(value = "FavoriteRepository", key = "'allFavorites'")
+    @Cacheable(value = "favorite_list")
     public List<FavoriteResponse> getAllFavorites() {
         log.info("getAllFavorites: Fetching from Database");
         return favoriteRepository.findAll().stream()
@@ -44,7 +44,7 @@ public class FavoriteService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Cacheable(value = "FavoriteRepository", key = "#favoriteId")
+    @Cacheable(value = "favorite_detail", key = "#favoriteId")
     public FavoriteResponse getFavoriteById(String favoriteId) {
         log.info("getFavoriteById: Fetching from Database for id {}", favoriteId);
         return favoriteMapper.toFavoriteResponse(favoriteRepository.findById(favoriteId)
@@ -53,8 +53,10 @@ public class FavoriteService {
 
     @PreAuthorize("hasRole('USER')")
     @Caching(evict = {
-            @CacheEvict(value = "FavoriteRepository", key = "'allFavorites'"),
-            @CacheEvict(value = "MovieRepository", allEntries = true) // Xóa cache Movie để cập nhật Rating mới
+            @CacheEvict(value = "favorite_list", allEntries = true),
+            @CacheEvict(value = "movie_list", allEntries = true),
+            @CacheEvict(value = "movie_detail", allEntries = true),
+            @CacheEvict(value = "movie_search", allEntries = true)
     })
     @Transactional
     public FavoriteResponse createFavorite(FavoriteRequest request) {
@@ -78,7 +80,13 @@ public class FavoriteService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "FavoriteRepository", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "favorite_list", allEntries = true),
+            @CacheEvict(value = "favorite_detail", key = "#favoriteId"),
+            @CacheEvict(value = "movie_list", allEntries = true),
+            @CacheEvict(value = "movie_detail", allEntries = true),
+            @CacheEvict(value = "movie_search", allEntries = true)
+    })
     public FavoriteResponse updateFavorite(String favoriteId, FavoriteRequest request) {
         log.info("updateFavorite: Updating favorite {}", favoriteId);
         Favorite favorite = favoriteRepository.findById(favoriteId)
@@ -101,7 +109,13 @@ public class FavoriteService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "FavoriteRepository", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "favorite_list", allEntries = true),
+            @CacheEvict(value = "favorite_detail", key = "#favoriteId"),
+            @CacheEvict(value = "movie_list", allEntries = true),
+            @CacheEvict(value = "movie_detail", allEntries = true),
+            @CacheEvict(value = "movie_search", allEntries = true)
+    })
     public void deleteFavorite(String favoriteId) {
         log.info("deleteFavorite: Deleting favorite {}", favoriteId);
         if (!favoriteRepository.existsById(favoriteId)) {
@@ -111,7 +125,7 @@ public class FavoriteService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "FavoriteRepository", allEntries = true)
+    @Cacheable(value = "favorite_list_by_profile", key = "#profile")
     public List<FavoriteResponse> getFavoritesByProfileId(String profile) {
         return favoriteRepository.findByProfileProfileId(profile).stream()
                 .map(favoriteMapper::toFavoriteResponse)
@@ -119,7 +133,7 @@ public class FavoriteService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "FavoriteRepository", allEntries = true)
+    @Cacheable(value = "favorite_detail_by_profile_movie", key = "#profileId + '_' + #movieId")
     public FavoriteResponse getFavoriteByProfileIdAndMovieId(String profileId, String movieId) {
         return favoriteMapper.toFavoriteResponse(favoriteRepository.findByMovieMovieIdAndProfileProfileId(movieId, profileId)
                 .orElseThrow(() -> new AppException(ErrorCode.FAVORITE_NOT_FOUND)));

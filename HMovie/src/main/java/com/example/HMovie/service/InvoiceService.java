@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,7 @@ public class InvoiceService {
     InvoiceMapper invoiceMapper;
 
     @PreAuthorize("hasRole('ADMIN')")
-    @Cacheable(value = "InvoiceRepository", key = "'allInvoices'")
+    @Cacheable(value = "invoice_list")
     public List<InvoiceResponse> getAllInvoices() {
         log.info("getAllInvoices: Fetching from Database");
         return invoiceRepository.findAll().stream()
@@ -36,7 +37,7 @@ public class InvoiceService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Cacheable(value = "InvoiceRepository", key = "#invoiceId")
+    @Cacheable(value = "invoice_detail", key = "#invoiceId")
     public InvoiceResponse getInvoiceById(String invoiceId) {
         log.info("getInvoiceById: Fetching from Database for id {}", invoiceId);
         return invoiceMapper.toInvoiceResponse(invoiceRepository.findById(invoiceId)
@@ -44,7 +45,10 @@ public class InvoiceService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "InvoiceRepository", key = "'allInvoices'")
+    @Caching(evict = {
+            @CacheEvict(value = "invoice_list", allEntries = true),
+            @CacheEvict(value = "invoice_list_by_profile", allEntries = true)
+    })
     public InvoiceResponse createInvoice(InvoiceRequest request) {
         log.info("createInvoice: Creating new invoice");
         Invoice invoice = invoiceMapper.toInvoice(request);
@@ -52,7 +56,11 @@ public class InvoiceService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "InvoiceRepository", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "invoice_list", allEntries = true),
+            @CacheEvict(value = "invoice_detail", key = "#invoiceId"),
+            @CacheEvict(value = "invoice_list_by_profile", allEntries = true)
+    })
     public InvoiceResponse updateInvoice(String invoiceId, InvoiceRequest request) {
         log.info("updateInvoice: Updating invoice {}", invoiceId);
         Invoice invoice = invoiceRepository.findById(invoiceId)
@@ -63,7 +71,11 @@ public class InvoiceService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @CacheEvict(value = "InvoiceRepository", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "invoice_list", allEntries = true),
+            @CacheEvict(value = "invoice_detail", key = "#invoiceId"),
+            @CacheEvict(value = "invoice_list_by_profile", allEntries = true)
+    })
     public void deleteInvoice(String invoiceId) {
         log.info("deleteInvoice: Deleting invoice {}", invoiceId);
         if (!invoiceRepository.existsById(invoiceId)) {
@@ -72,6 +84,7 @@ public class InvoiceService {
         invoiceRepository.deleteById(invoiceId);
     }
 
+    @Cacheable(value = "invoice_list_by_profile", key = "#profileId")
     public List<InvoiceResponse> getInvoicesByProfileId(String profileId) {
         return invoiceRepository.findByProfileProfileId(profileId).stream()
                 .map(invoiceMapper::toInvoiceResponse)
