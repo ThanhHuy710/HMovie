@@ -1,9 +1,8 @@
 import { Toaster } from "sonner";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import HomePage from "./pages/HomePage.jsx";
 import MovieDetail from "./pages/MovieDetail.jsx";
-import SearchPage from "./pages/SearchPage.jsx";
 import AuthPage from "./pages/AuthPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import WatchMovie from "./pages/WatchMovie.jsx";
@@ -22,27 +21,9 @@ import ProfilePage from "./pages/ProfilePage.jsx";
 import FavouritePage from "./pages/FavouritePage.jsx";
 import PurchaseHistoryPage from "./pages/PurchaseHistoryPage.jsx";
 import HistoryPage from "./pages/HistoryPage.jsx";
-import { useEffect } from "react";
-import { keycloak } from "./keycloak.js";
+
 
 function AppContent() {
-  const { login } = useAuth();
-
-  useEffect(() => {
-    const initializeKeycloak = async () => {
-      try {
-        const authenticated = await keycloak.init({ onLoad: 'check-sso', silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html' });
-        if (authenticated) {
-          const profile = await keycloak.loadUserProfile();
-          login(profile, keycloak.token);
-        }
-      } catch (error) {
-        console.error("Keycloak initialization failed", error);
-      }
-    };
-    initializeKeycloak();
-  }, [login]);
-
   return (
     <>
       <Toaster

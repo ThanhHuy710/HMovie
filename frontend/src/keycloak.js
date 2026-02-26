@@ -7,27 +7,4 @@ const keycloak = new Keycloak({
   clientId: KEYCLOACK_CONFIG.clientId,
 });
 
-const loginWithGoogle = async () => {
-  try {
-    await keycloak.init({ onLoad: 'check-sso' });
-    keycloak.login({
-      idpHint: 'google'
-    });
-  } catch (error) {
-    console.error("Keycloak init failed:", error);
-  }
-};
-
-const registerWithGoogle = async () => {
-  try {
-    await keycloak.init({ onLoad: 'check-sso' });
-    keycloak.login({
-      idpHint: 'google',
-      action: 'register'
-    });
-  } catch (error) {
-    console.error("Keycloak init failed:", error);
-  }
-};
-
-export { keycloak, loginWithGoogle, registerWithGoogle };
+export { keycloak };

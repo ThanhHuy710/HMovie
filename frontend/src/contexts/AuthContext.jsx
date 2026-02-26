@@ -56,7 +56,6 @@ export function AuthProvider({ children }) {
     if (!token) return false;
     try {
       const decoded = jwtDecode(token);
-      // Dùng Optional Chaining (?.) để chống lỗi sập web nếu thiếu thuộc tính
       const roles = decoded?.realm_access?.roles || []; 
       return roles.includes("ADMIN");
     } catch (error) {

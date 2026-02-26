@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
-import { KEYCLOACK_CONFIG } from "../configurations/configuration";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -178,14 +177,14 @@ export default function AuthPage() {
       // Chuẩn bị dữ liệu form-urlencoded cho Keycloak
       const params = new URLSearchParams();
       params.append('grant_type', 'password');
-      params.append('client_id', KEYCLOACK_CONFIG.clientId);
+      params.append('client_id', 'HMovie');
       params.append('client_secret', 'MB8ERbznEkPc6inAtFOaG03yRDKJ4A5s');
       params.append('username', loginData.username);
       params.append('password', loginData.password);
       params.append('scope', 'openid');
 
       const res = await axios.post(
-        `${KEYCLOACK_CONFIG.url}/realms/${KEYCLOACK_CONFIG.realm}/protocol/openid-connect/token`,
+        "http://localhost:8180/realms/HMovie/protocol/openid-connect/token",
         params,
         {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -221,7 +220,15 @@ export default function AuthPage() {
     } catch (error) {
       console.error("Login error:", error);
       console.error("Error response:", error.response?.data);
-      toast.error(error.response?.data?.message || "Đăng nhập thất bại");
+
+      if (
+        error.response?.data?.error === 'invalid_grant' &&
+        error.response?.data?.error_description === 'Account disabled'
+      ) {
+        toast.error("Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+      } else {
+        toast.error(error.response?.data?.message || "Đăng nhập thất bại");
+      }
     } finally {
       setLoading(false);
     }
