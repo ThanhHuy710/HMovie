@@ -16,7 +16,7 @@ export default function WatchMovie() {
   const navigate = useNavigate();
   const query = new URLSearchParams(search);
   const episodeId = query.get("episode"); // ep.id
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [film, setFilm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [films, setFilms] = useState([]);
@@ -33,7 +33,11 @@ export default function WatchMovie() {
   useEffect(() => {
     const checkAccessAndLoadFilm = async () => {
       window.scrollTo(0, 0);
-      // Kiểm tra đăng nhập
+      // Chờ cho đến khi AuthContext xác thực xong
+      if (authLoading) {
+        return;
+      }
+      // Kiểm tra đăng nhập sau khi đã load xong user info
       if (!user) {
         navigate("/auth");
         return;
@@ -44,7 +48,7 @@ export default function WatchMovie() {
 
     checkAccessAndLoadFilm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, episodeId]);
+  }, [id, episodeId, authLoading, user]);
 
   const fetchFilm = async () => {
     try {

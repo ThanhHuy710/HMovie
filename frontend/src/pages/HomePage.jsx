@@ -55,10 +55,6 @@ export default function HomePage() {
       setLoading(false);
     }
   };
-  console.log("Hot films:", hotFilms);
-  console.log("Rating films:", ratingFilms);
-  console.log("Recommended films:", recommendedFilms);
-  console.log("Favorite films:", favoriteFilms);
   if (loading) {
     return (
       <Layout>

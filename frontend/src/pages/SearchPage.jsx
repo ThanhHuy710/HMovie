@@ -18,10 +18,6 @@ export default function SearchPage() {
       
       setLoading(true);
       try {
-        // TODO: Backend cần implement search endpoint:
-        // GET /api/films/search?q=keyword
-        // - Tìm kiếm theo title, actor, director
-        // - Support filters: genre, country, year
         const res = await api.get(`/tasks/search?q=${query}`);
         setResults(res.data?.result || []);
       } catch {

@@ -1,12 +1,17 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
+  baseURL: "http://localhost:8080/api",
 });
 
 // Interceptor gắn token vào mọi Request
 api.interceptors.request.use(
   (config) => {
+    // Nếu config có cờ skipAuth thì bỏ qua việc gắn token
+    if (config.skipAuth) {
+      return config;
+    }
+
     // 1. Lấy token trực tiếp từ localStorage (Thống nhất với AuthContext và AuthPage)
     const token = localStorage.getItem("token");
 
@@ -27,6 +32,7 @@ api.interceptors.response.use(
     // Nếu Backend báo lỗi 401 (Unauthorized) do token hết hạn
     if (error.response && error.response.status === 401) {
       console.warn("Token hết hạn hoặc không hợp lệ!");
+      console.warn(error.response.data); // Log chi tiết lỗi từ Backend để debug
       
       // Xóa token cũ rác đi
       localStorage.removeItem("token");

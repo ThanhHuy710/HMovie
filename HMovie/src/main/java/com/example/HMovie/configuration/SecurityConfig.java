@@ -36,7 +36,7 @@ public class SecurityConfig {
             "/movies/season/{movieId}",
             "/movies/criteria",
             "/movies/**",
-
+            "/feedbacks/movie/{movieId}",
             "/genres",
             "/genres/**",
 

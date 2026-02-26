@@ -31,4 +31,4 @@ spring:
 idp:
     url: ${KEYCLOAK_URL:http://localhost:8180}
     client-id: HMovie
-    client-secret: ri8WRorWmGFtLyH6GOJAfO8ZR2gE8JZU
+    client-secret: 9C4iUrMEeVo4GGhfRKFYGRiqxcUpI0Tt

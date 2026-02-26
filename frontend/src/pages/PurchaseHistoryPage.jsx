@@ -131,7 +131,11 @@ export default function PurchaseHistoryPage() {
               </div>
               <div className="text-right">
                 <div className={`text-3xl font-bold ${totalRemainingDays > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {totalRemainingDays > 0 ? `${totalRemainingDays} ngày` : 'Đã hết hạn'}
+                  {user?.plan ? 
+                  (totalRemainingDays > 0 ?
+                     `${totalRemainingDays} ngày` :
+                     'Đã hết hạn') 
+                  : 'Không có gói'}
                 </div>
                 {totalRemainingDays > 0 && totalRemainingDays <= 7 && (
                   <p className="text-sm text-yellow-400">Sắp hết hạn</p>

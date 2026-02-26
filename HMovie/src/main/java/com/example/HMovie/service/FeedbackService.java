@@ -50,8 +50,7 @@ public class FeedbackService {
         return feedbackMapper.toFeedbackResponse(feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_FOUND)));
     }
-    
-    @PreAuthorize("hasRole('USER')")
+
     public List<FeedbackResponse> getFeedbacksByMovieId(String movieId) {
         log.info("getFeedbacksByMovieId: Fetching feedbacks for movie {}", movieId);
         return feedbackRepository.findByMovieMovieId(movieId).stream()

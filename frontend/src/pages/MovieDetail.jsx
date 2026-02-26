@@ -60,7 +60,9 @@ export default function MovieDetail() {
   };
   const fetchFilms = async () => {
     try {
-      const res = await api.get("/movies");
+      const res = await api.get("/movies", {
+        skipAuth: true,
+      });
       setFilms(res.data?.result || []);
     } catch (error) {
       console.error("Lỗi:", error);

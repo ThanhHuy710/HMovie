@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,12 @@ public class PaymentService {
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "InvoiceRepository", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "InvoiceRepository", allEntries = true),
+                    @CacheEvict(value = "ProfileRepository", allEntries = true)
+            }
+    )
     public InvoiceResponse processPayment(PaymentRequest request) {
         //kiểm tra null
         if (!StringUtils.hasText(request.getProfileId())) {

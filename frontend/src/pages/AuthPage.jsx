@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
-import axios from "axios";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -174,16 +173,17 @@ export default function AuthPage() {
       ///Gửi yêu cầu đăng nhập
       console.log("Đang đăng nhập với:", { username: loginData.username, password: loginData.password });
       
-      const res = await axios.post("/profile/login",{
+      const res = await api.post("/profile/login", {
         username: loginData.username,
-        password: loginData.password
-      }
-      );
+        password: loginData.password,
+      }, {
+        skipAuth: true,
+      });
 
-      console.log("Login response:", res.data);
+      console.log("Login response:", res.data.result);
 
       // Lấy token từ response Keycloak (snake_case)
-      const { access_token, refresh_token } = res.data;
+      const { access_token, refresh_token } = res.data.result;
 
       if (access_token) {
         localStorage.setItem("token", access_token);
