@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +29,12 @@ public class ErrorNormalizer {
     public AppException handleKeyCloakException(FeignException exception) {
         try {
             log.warn("Cannot complete request", exception);
-            var response = objectMapper.readValue(exception.contentUTF8(), KeyCloakError.class);
+            String content = exception.contentUTF8();
+            if (!StringUtils.hasText(content)) {
+                return new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
+            
+            var response = objectMapper.readValue(content, KeyCloakError.class);
 
             if (Objects.nonNull(response.getErrorMessage())
                     && Objects.nonNull(errorCodeMap.get(response.getErrorMessage()))) {

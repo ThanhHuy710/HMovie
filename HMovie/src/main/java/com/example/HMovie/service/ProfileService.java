@@ -1,8 +1,9 @@
 package com.example.HMovie.service;
 
 import com.example.HMovie.dto.identity.Credential;
-import com.example.HMovie.dto.identity.TokenExchangeParam;
+import com.example.HMovie.dto.identity.TokenExchangeResponse;
 import com.example.HMovie.dto.identity.UserCreationParam;
+import com.example.HMovie.dto.request.LoginRequest;
 import com.example.HMovie.dto.request.ProfileRequest;
 import com.example.HMovie.dto.request.RegistrationRequest;
 import com.example.HMovie.dto.response.ProfileResponse;
@@ -28,7 +29,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -133,6 +136,22 @@ public class ProfileService {
         }
     }
 
+    public TokenExchangeResponse login(@Valid LoginRequest request) {
+        try {
+            Map<String, String> params = new HashMap<>();
+            params.put("grant_type", "password");
+            params.put("client_id", clientId);
+            params.put("client_secret", clientSecret);
+            params.put("username", request.getUsername());
+            params.put("password", request.getPassword());
+            params.put("scope", "openid");
+
+            return identityClient.exchangeToken(params);
+        } catch (FeignException exception) {
+            throw errorNormalizer.handleKeyCloakException(exception);
+        }
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "ProfileRepository", allEntries = true)
     public void deleteProfile(String profileId) {
@@ -154,12 +173,13 @@ public class ProfileService {
     }
 
     private String getAdminToken() {
-        var token = identityClient.exchangeToken(TokenExchangeParam.builder()
-                .grant_type("client_credentials")
-                .client_id(clientId)
-                .client_secret(clientSecret)
-                .scope("openid")
-                .build());
+        Map<String, String> params = new HashMap<>();
+        params.put("grant_type", "client_credentials");
+        params.put("client_id", clientId);
+        params.put("client_secret", clientSecret);
+        params.put("scope", "openid");
+
+        var token = identityClient.exchangeToken(params);
         return token.getAccessToken();
     }
 

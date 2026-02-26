@@ -174,21 +174,10 @@ export default function AuthPage() {
       ///Gửi yêu cầu đăng nhập
       console.log("Đang đăng nhập với:", { username: loginData.username, password: loginData.password });
       
-      // Chuẩn bị dữ liệu form-urlencoded cho Keycloak
-      const params = new URLSearchParams();
-      params.append('grant_type', 'password');
-      params.append('client_id', 'HMovie');
-      params.append('client_secret', 'MB8ERbznEkPc6inAtFOaG03yRDKJ4A5s');
-      params.append('username', loginData.username);
-      params.append('password', loginData.password);
-      params.append('scope', 'openid');
-
-      const res = await axios.post(
-        "http://localhost:8180/realms/HMovie/protocol/openid-connect/token",
-        params,
-        {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        }
+      const res = await axios.post("/profile/login",{
+        username: loginData.username,
+        password: loginData.password
+      }
       );
 
       console.log("Login response:", res.data);
@@ -207,9 +196,7 @@ export default function AuthPage() {
 
       // Bước 2: Lấy thông tin user
       // Gọi API /users/myInfo (hoặc endpoint tương đương trong Spring Boot) để lấy thông tin user từ token
-      const userRes = await api.get("/profile/my-profile", {
-        headers: { Authorization: `Bearer ${access_token}` },
-      });
+      const userRes = await api.get("/profile/my-profile");
       console.log("User response:", userRes.data.result);
 
       // Lưu vào AuthContext

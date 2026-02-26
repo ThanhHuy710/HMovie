@@ -1,6 +1,8 @@
 package com.example.HMovie.controller;
 
 import com.example.HMovie.dto.ApiResponse;
+import com.example.HMovie.dto.identity.TokenExchangeResponse;
+import com.example.HMovie.dto.request.LoginRequest;
 import com.example.HMovie.dto.request.ProfileRequest;
 import com.example.HMovie.dto.request.RegistrationRequest;
 import com.example.HMovie.dto.response.ProfileResponse;
@@ -28,7 +30,12 @@ public class ProfileController {
                 .result(profileService.register(request))
                 .build();
     }
-
+    @PostMapping("/login")
+    ApiResponse<TokenExchangeResponse> login(@RequestBody @Valid LoginRequest request) {
+        return ApiResponse.<TokenExchangeResponse>builder()
+                .result(profileService.login(request))
+                .build();
+    }
     @GetMapping("/profiles")
     ApiResponse<List<ProfileResponse>> getAllProfiles() {
         return ApiResponse.<List<ProfileResponse>>builder()
